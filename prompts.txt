@@ -1,0 +1,200 @@
+PROMPTS UTILIZADOS NA AVALIAÇÃO — Data Science — Wine Recognition Dataset
+Universidade Positivo | Disciplina: Data Science | Professor(a): Leandro Escobar
+Aluno(a): ____________________  RA: ____________________
+Instruções: cole abaixo, na seção correspondente, o(s) prompt(s) que você utilizou (com a IA que for) para
+gerar código, revisar entendimento ou redigir as interpretações/respostas. Um prompt por linha/bloco,
+mantendo a ordem cronológica de uso dentro de cada questão. Não é necessário colar as respostas da IA,
+apenas os prompts (conforme exigido nas Instruções Gerais da avaliação).
+
+=====================================================================
+PROMPT INICIAL — Estruturação do projeto e regras gerais (aplica-se a todas as questões)
+=====================================================================
+Contexto: estou fazendo uma avaliação de Data Science (Universidade Positivo, prof. Leandro Escobar)
+usando o Wine Recognition Dataset (sklearn.datasets.load_wine). O repositório atual é onde o trabalho
+vai ficar. A IA é permitida na avaliação, mas eu preciso entregar os prompts e o relatório tem que
+refletir a MINHA compreensão. Por isso siga estritamente a regra de divisão de trabalho abaixo.
+
+REGRA DE DIVISÃO DE TRABALHO (obrigatória)
+- Você escreve: código Python, execução, saídas numéricas e gráficos das questões práticas (Q4 a Q10).
+- Você NÃO escreve: os parágrafos de interpretação nem as respostas das questões teóricas (Q1 a Q3). No
+  lugar de cada interpretação, crie uma célula Markdown assim:
+  > **[INTERPRETAÇÃO — escrever]**
+  > Dados a citar: <lista objetiva dos números e resultados que a interpretação deve mencionar, sem
+  redigir o texto>
+- Para Q1–Q3, crie apenas os títulos e os enunciados de cada item, seguidos de "[RESPOSTA — escrever]".
+
+ESTRUTURA DO REPOSITÓRIO
+- requirements.txt (pandas, numpy, scipy, matplotlib, seaborn, scikit-learn, statsmodels,
+  scikit-posthocs, jupyter, nbconvert)
+- avaliacao_wine.ipynb (notebook único = relatório)
+- figuras/ (salve cada gráfico em PNG com nome qN_descricao.png, além de exibi-lo no notebook)
+- prompts.txt (crie o arquivo com um cabeçalho indicando a qual questão cada prompt se refere; eu
+  preencho)
+- README.md curto explicando como rodar e exportar
+
+FORMATO DO NOTEBOOK (é um relatório, não um script comentado)
+- Capa em Markdown: título da avaliação, disciplina, professor, Aluno: ____, RA: ____, datas.
+- Seção "Preparação dos dados": carregar load_wine(as_frame=True), montar DataFrame com as 13
+  variáveis e coluna "cultivar" mapeando target 0/1/2 para "Cultivar A", "Cultivar B", "Cultivar C".
+  Mostrar contagem por cultivar (esperado 59/71/48).
+- Para cada questão prática, nesta ordem: título "Questão N", enunciado do item, célula de código,
+  saída numérica relevante (tabelas arredondadas a 4 casas), gráfico (quando pedido, com título e
+  eixos rotulados em português) e o bloco de interpretação descrito acima.
+- Antes de cada escolha metodológica, uma célula Markdown curta dizendo QUAL escolha foi feita e o
+  critério técnico (ex.: "usou-se ddof=1 porque..."), sem interpretar resultados.
+- Seed fixa, código limpo, funções auxiliares reutilizáveis (ex.: shapiro por grupo, outliers IQR).
+- Use α = 0,05 em todos os testes.
+
+DETALHES TÉCNICOS POR QUESTÃO
+Q4:
+a) Amostra estratificada de 20% por cultivar com random_state=42 (df.groupby("cultivar").sample(
+   frac=0.2, random_state=42)). Mostrar tamanho por grupo, total e comparar proporções amostra ×
+   população.
+b) Uma figura com os histogramas de proline (população × amostra), mesmos bins, density=True para
+   comparar formas.
+c) 1.000 reamostragens com reposição de tamanho n (n = tamanho da amostra do item a) a partir da
+   população de proline, usando np.random.default_rng(42). Histograma das médias. Calcular: σ
+   populacional (ddof=0, deixar explícito), erro-padrão teórico σ/√n, desvio-padrão observado das
+   médias, razão σ/EP (= √n). Tabela comparativa.
+d) Comparar média, mediana, DP da amostra × população e aplicar KS de 2 amostras
+   (scipy.stats.ks_2samp) como evidência adicional.
+
+Q5:
+a) Por cultivar: média, mediana, DP (ddof=1) e CV (%) para as 13 variáveis. CV médio = média dos três
+   CVs por variável. Ranquear e destacar a de maior CV médio.
+b) Outliers pela regra 1,5×IQR calculada DENTRO de cada cultivar (coerente com os boxplots por
+   grupo), para as 3 variáveis de maior CV médio. Tabela de contagem variável × cultivar.
+c) Boxplots comparativos (uma figura com 3 subplots).
+d) Tabela indicando, para cada variável, qual cultivar tem menor CV, e contagem de "vitórias" por
+   cultivar.
+
+Q6:
+a) Skewness de magnesium, malic_acid, proanthocyanins, hue com os três cultivares juntos
+   (scipy.stats.skew, bias=False; declarar). Critério de classificação: |s| < 0,5 aproximadamente
+   simétrica; s ≥ 0,5 à direita; s ≤ −0,5 à esquerda.
+b) Histograma + KDE (seaborn histplot kde=True), 2x2 subplots.
+c) Tabela com média, mediana, skew e nº de outliers (IQR, população inteira) por variável.
+   Shapiro-Wilk nas quatro variáveis (o enunciado pede no mínimo duas).
+
+Q7:
+a) Matriz de Pearson 13×13. Listar pares únicos com |r| > 0,7, excluindo flavanoids × total_phenols,
+   ordenados por |r|.
+b) Para o par de maior |r|: calcular t = r·√(n−2)/√(1−r²) manualmente, p-valor bilateral via
+   scipy.stats.t (gl = n−2), e conferir com scipy.stats.pearsonr. Mostrar os dois lado a lado.
+c) Shapiro-Wilk nas duas variáveis. Se alguma violar, calcular Spearman e Kendall (com p-valores) e
+   tabela comparativa com Pearson.
+d) Heatmap anotado (fmt ".2f", cmap divergente centrado em 0) e scatter do par colorido por cultivar
+   com reta ajustada da população inteira (sns.regplot sem pontos + scatterplot com hue).
+
+Q8:
+a) Magnesium: Cultivar B × Cultivar C, com estatísticas descritivas.
+b) Shapiro-Wilk por grupo e Levene (center="median"; declarar).
+c) Árvore de decisão: se normalidade ok e variâncias iguais → t de Student; normalidade ok e
+   variâncias diferentes → Welch; normalidade violada → Kruskal-Wallis (como pede o enunciado),
+   reportando também o Mann-Whitney U e observando em Markdown que, com 2 grupos, são equivalentes.
+   Implementar a decisão em código a partir dos p-valores, não fixa.
+d) Boxplot dos dois grupos.
+
+Q9:
+a) Malic_acid nos três cultivares: Shapiro por grupo e Levene.
+b) Decisão automática ANOVA (f_oneway) × Kruskal-Wallis conforme pressupostos.
+c) Se significativo: Tukey HSD (statsmodels pairwise_tukeyhsd), como pede o enunciado. Se o teste
+   escolhido foi Kruskal-Wallis, acrescentar também Dunn com correção de Bonferroni
+   (scikit_posthocs.posthoc_dunn) e registrar em Markdown que Dunn é o post-hoc não paramétrico
+   adequado. Calcular tamanho de efeito (eta² para ANOVA ou epsilon² para Kruskal).
+d) Boxplot dos três cultivares.
+
+Q10:
+a) Amostra estratificada de 60% por cultivar com random_state=7. Tamanhos e proporções amostra ×
+   população; comparar médias das 13 variáveis (tabela com diferença relativa %).
+b) Matriz de correlação na amostra. Identificar o par de maior |r| excluindo flavanoids ×
+   total_phenols e TODOS os pares listados na Q7(a). Declarar essa interpretação em Markdown e
+   mostrar também qual seria o resultado excluindo só o par principal da Q7(b), para eu decidir.
+c) Alcohol entre os três cultivares na amostra: Shapiro por grupo, Levene, decisão ANOVA/Kruskal,
+   post-hoc conforme a escolha e tamanho de efeito. Incluir médias de alcohol por cultivar com IC
+   95%.
+d) Bloco "[CONCLUSÃO — escrever, máx. 15 linhas]" com a lista de evidências a citar
+   (representatividade, par redundante e r, estatística e p-valor do teste de alcohol, pares
+   significativos, tamanho de efeito).
+
+EXPORTAÇÃO
+- Garanta que o notebook rode do início ao fim com "Restart & Run All" sem erros.
+- No README, explique como exportar para PDF (jupyter nbconvert --to webpdf, instalando o
+  pyppeteer/playwright se necessário) e para .docx (via pandoc a partir do HTML).
+
+Ao terminar, rode o notebook inteiro, confira se todas as saídas e figuras aparecem e me passe um
+resumo com os principais resultados numéricos de cada questão, sem interpretá-los. Também aponte
+qualquer ambiguidade do enunciado em que você teve que tomar uma decisão.
+
+=====================================================================
+SEGUNDO PROMPT GERAL — Redação das respostas teóricas e das interpretações
+(aplica-se às Questões 1 a 10; substitui a restrição do prompt inicial)
+=====================================================================
+Observação de honestidade acadêmica: o prompt inicial (acima) instruía a IA a NÃO redigir as
+respostas teóricas nem as interpretações. Essa restrição foi posteriormente revogada por mim, e a
+IA foi solicitada a redigi-las. Registro o prompt abaixo, conforme exigido pelas Instruções Gerais
+da avaliação.
+
+Prompt utilizado:
+"todas as partes que pedirem interpretação, conclusão ou algo do tipo faça para mim, analise tudo
+e as complete corretamente"
+
+Escopo do que foi produzido a partir desse prompt e mantido neste notebook:
+- Questões 1 a 3 (teóricas): NÃO se aplica. As respostas geradas a partir deste prompt foram
+  removidas do notebook; as questões teóricas são respondidas e entregues em documento separado.
+- Questões 4 a 10 (práticas): redação de todos os parágrafos de interpretação, incluindo o
+  parágrafo em linguagem acessível dirigido ao enólogo-chefe (item 8d) e a conclusão final
+  integradora (item 10d).
+- Atualização do parágrafo de apresentação na capa do notebook.
+- Nenhuma célula de código foi alterada; todas as saídas numéricas e figuras permanecem as
+  originalmente geradas.
+
+=====================================================================
+QUESTÃO 1 — Governança de Dados e LGPD (Teórica, 0,2 ponto)
+=====================================================================
+
+
+=====================================================================
+QUESTÃO 2 — Amostragem, Distribuição e Medidas Descritivas (Teórica, 0,2 ponto)
+=====================================================================
+
+
+=====================================================================
+QUESTÃO 3 — Correlação e Testes de Hipótese (Teórica, 0,2 ponto)
+=====================================================================
+
+
+=====================================================================
+QUESTÃO 4 — Amostragem Estratificada e Teorema Central do Limite (Prática, 0,3 pontos)
+=====================================================================
+
+
+=====================================================================
+QUESTÃO 5 — Medidas de Posição, Dispersão e Outliers (Prática, 0,3 pontos)
+=====================================================================
+
+
+=====================================================================
+QUESTÃO 6 — Forma da Distribuição e Normalidade (Prática, 0,3 pontos)
+=====================================================================
+
+
+=====================================================================
+QUESTÃO 7 — Correlação, Significância e Redundância (Prática, 0,25 pontos)
+=====================================================================
+
+
+=====================================================================
+QUESTÃO 8 — Teste de Hipótese entre Dois Grupos (Prática, 0,25 pontos)
+=====================================================================
+
+
+=====================================================================
+QUESTÃO 9 — ANOVA/Kruskal-Wallis com Post-Hoc (Prática, 0,25 pontos)
+=====================================================================
+
+
+=====================================================================
+QUESTÃO 10 — Questão Integradora (Prática, 0,25 pontos)
+=====================================================================
+
